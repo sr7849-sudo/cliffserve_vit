@@ -1,0 +1,46 @@
+ .gitignore                                                                |   43 [32m++[m
+ cliffserve.py                                                             | 4656 [32m+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++[m
+ extended_latency.yaml                                                     |   25 [32m+[m
+ pilot.yaml                                                                |   54 [32m++[m
+ plot_batch_gain.py                                                        |   79 [32m+++[m
+ plot_latency_cliffs.py                                                    |   64 [32m++[m
+ results/combined_latency/analysis/best_latency_configuration_by_batch.csv |   10 [32m+[m
+ results/combined_latency/analysis/detected_latency_cliffs.csv             |   30 [32m+[m
+ results/combined_latency/analysis/extended_latency_heatmap.pdf            |  Bin [31m0[m -> [32m19318[m bytes
+ results/combined_latency/analysis/extended_latency_heatmap.png            |  Bin [31m0[m -> [32m68632[m bytes
+ results/combined_latency/analysis/extended_throughput_curves.pdf          |  Bin [31m0[m -> [32m20336[m bytes
+ results/combined_latency/analysis/extended_throughput_curves.png          |  Bin [31m0[m -> [32m166831[m bytes
+ results/combined_latency/analysis/fig_batch_vs_pruning_gain.pdf           |  Bin [31m0[m -> [32m14941[m bytes
+ results/combined_latency/analysis/fig_batch_vs_pruning_gain.png           |  Bin [31m0[m -> [32m135634[m bytes
+ results/combined_latency/analysis/fig_latency_cliffs_by_batch.pdf         |  Bin [31m0[m -> [32m21983[m bytes
+ results/combined_latency/analysis/fig_latency_cliffs_by_batch.png         |  Bin [31m0[m -> [32m244208[m bytes
+ results/combined_latency/latency.csv                                      |   91 [32m+++[m
+ results/extended_latency/latency.csv                                      |   41 [32m++[m
+ results/extended_latency/provenance.json                                  |   39 [32m++[m
+ results/pilot/accuracy.csv                                                |   51 [32m++[m
+ results/pilot/cliff_frontier.csv                                          |    8 [32m+[m
+ results/pilot/figures/fig1_latency_surface.pdf                            |  Bin [31m0[m -> [32m19383[m bytes
+ results/pilot/figures/fig1_latency_surface.png                            |  Bin [31m0[m -> [32m62294[m bytes
+ results/pilot/figures/fig2_batch_frontiers.pdf                            |  Bin [31m0[m -> [32m18123[m bytes
+ results/pilot/figures/fig2_batch_frontiers.png                            |  Bin [31m0[m -> [32m111936[m bytes
+ results/pilot/figures/fig3_slo_onoff_d2.pdf                               |  Bin [31m0[m -> [32m17783[m bytes
+ results/pilot/figures/fig3_slo_onoff_d2.png                               |  Bin [31m0[m -> [32m61956[m bytes
+ results/pilot/figures/fig3_slo_onoff_d4.pdf                               |  Bin [31m0[m -> [32m17859[m bytes
+ results/pilot/figures/fig3_slo_onoff_d4.png                               |  Bin [31m0[m -> [32m94696[m bytes
+ results/pilot/figures/fig3_slo_onoff_d8.pdf                               |  Bin [31m0[m -> [32m17881[m bytes
+ results/pilot/figures/fig3_slo_onoff_d8.png                               |  Bin [31m0[m -> [32m111626[m bytes
+ results/pilot/figures/fig3_slo_poisson_d2.pdf                             |  Bin [31m0[m -> [32m17773[m bytes
+ results/pilot/figures/fig3_slo_poisson_d2.png                             |  Bin [31m0[m -> [32m61348[m bytes
+ results/pilot/figures/fig3_slo_poisson_d4.pdf                             |  Bin [31m0[m -> [32m17832[m bytes
+ results/pilot/figures/fig3_slo_poisson_d4.png                             |  Bin [31m0[m -> [32m91588[m bytes
+ results/pilot/figures/fig3_slo_poisson_d8.pdf                             |  Bin [31m0[m -> [32m17773[m bytes
+ results/pilot/figures/fig3_slo_poisson_d8.png                             |  Bin [31m0[m -> [32m96707[m bytes
+ results/pilot/joint_vs_decoupled.csv                                      |   31 [32m+[m
+ results/pilot/latency.csv                                                 |   51 [32m++[m
+ results/pilot/pilot_report.json                                           |   44 [32m++[m
+ results/pilot/provenance.json                                             |   62 [32m++[m
+ results/pilot/surface.csv                                                 |   51 [32m++[m
+ results/pilot/sweep/summary.csv                                           |  451 [32m++++++++++++++[m
+ third_party/POMT_COMMIT.txt                                               |    1 [32m+[m
+ third_party/POMT_LOCAL_PATCH.diff                                         |   22 [32m+[m
+ 45 files changed, 5904 insertions(+)

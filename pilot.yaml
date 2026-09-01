@@ -1,0 +1,54 @@
+model: deit_small_patch16_224
+
+device: cuda:0
+prune_layer: 3
+
+batch_sizes:
+  - 1
+  - 2
+  - 4
+  - 8
+  - 16
+
+r_values:
+  - 0
+  - 16
+  - 32
+  - 48
+  - 64
+  - 80
+  - 96
+  - 112
+  - 128
+  - 144
+
+latency_warmup: 30
+latency_repeats: 150
+
+accuracy_samples: 2000
+
+epsilon_pp: 1.0
+
+cliff_min_relative_gain: 0.02
+cliff_min_absolute_gain_ms: 0.02
+
+batch_window_ms: 1.0
+
+requests_per_trace: 5000
+
+load_factors:
+  - 0.30
+  - 0.60
+  - 0.80
+  - 0.95
+  - 1.10
+
+deadline_factors:
+  - 2
+  - 4
+  - 8
+
+seeds:
+  - 84
+  - 85
+  - 86

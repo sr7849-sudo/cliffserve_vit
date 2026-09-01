@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+
+# Large datasets
+data/
+*.tar
+*.tar.gz
+*.zip
+
+# Logs / temp
+*.log
+*.out
+*.err
+
+# Slurm
+slurm-*.out
+slurm-*.err
+
+# Large raw scheduler traces
+results/**/sweep/requests_*.csv
+results/**/sweep/batches_*.csv
+
+# Raw latency samples
+results/**/latency_samples.npz
+
+# Backups
+*.bak
+*.backup
+cliffserve.py.before_extended_latency
+
+# Editors / OS
+.DS_Store
+.vscode/
+.idea/
+
+# Do not vendor full upstream POMT clone
+third_party/PruneOneMoreToken/

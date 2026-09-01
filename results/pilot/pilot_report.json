@@ -1,0 +1,44 @@
+{
+  "batch_results": {
+    "1": {
+      "best_quality_feasible_r": 0,
+      "best_p95_latency_ms": 5.741983890533447,
+      "cliff_r_values_5pct": []
+    },
+    "2": {
+      "best_quality_feasible_r": 0,
+      "best_p95_latency_ms": 5.670132756233215,
+      "cliff_r_values_5pct": []
+    },
+    "4": {
+      "best_quality_feasible_r": 0,
+      "best_p95_latency_ms": 5.658966279029846,
+      "cliff_r_values_5pct": []
+    },
+    "8": {
+      "best_quality_feasible_r": 0,
+      "best_p95_latency_ms": 7.1707007646560665,
+      "cliff_r_values_5pct": []
+    },
+    "16": {
+      "best_quality_feasible_r": 80,
+      "best_p95_latency_ms": 11.584795236587524,
+      "cliff_r_values_5pct": [
+        48,
+        64,
+        80
+      ]
+    }
+  },
+  "A_hardware_nonseparability": {
+    "any_5pct_latency_cliff": true,
+    "cliff_locations_change_with_batch": true,
+    "best_quality_feasible_r_changes_with_batch": true
+  },
+  "B_joint_scheduler_signal": {
+    "max_slo_gain_pp": 28.373333333333335,
+    "max_throughput_gain_pct": 111.1335525055206,
+    "passes_target": true
+  },
+  "recommend_continue": true
+}

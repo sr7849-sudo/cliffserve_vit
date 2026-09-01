@@ -1,0 +1,22 @@
+diff --git a/pomt/__init__.py b/pomt/__init__.py
+index 593c237..99cf836 100644
+--- a/pomt/__init__.py
++++ b/pomt/__init__.py
+@@ -1,4 +1,12 @@
+-from .dinov2_patch import dinov2_apply_pomt_patch
+-from .timm_patch import timm_apply_pomt_patch
+-
+-__all__ = ["dinov2_apply_pomt_patch", "timm_apply_pomt_patch"]
+\ No newline at end of file
++# POMT package imports.
++#
++# DINOv2 is optional for CliffServe-ViT. The upstream package imports
++# the DINOv2 patch unconditionally, which prevents the TIMM patch from
++# being used unless the separate DINOv2 repository is installed.
++
++try:
++    from .dinov2_patch import dinov2_apply_pomt_patch
++except (ImportError, ModuleNotFoundError):
++    dinov2_apply_pomt_patch = None
++
++from .timm_patch import timm_apply_pomt_patch
