@@ -1,0 +1,31 @@
+epsilons:
+  - 0.5
+  - 1.0
+  - 2.0
+
+seeds:
+  - 84
+  - 85
+  - 86
+  - 87
+  - 88
+
+load_factors:
+  - 0.30
+  - 0.60
+  - 0.80
+  - 0.95
+  - 1.10
+
+deadline_factors:
+  - 2
+  - 4
+  - 8
+  - 12
+
+requests_per_trace: 10000
+
+batch_window_ms: 1.0
+
+cliff_min_relative_gain: 0.02
+cliff_min_absolute_gain_ms: 0.02

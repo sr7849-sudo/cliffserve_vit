@@ -4381,6 +4381,485 @@ def analyze_extended_latency(
 
 
 
+
+# ============================================================
+# Accuracy-only characterization
+# ============================================================
+
+def run_accuracy_only(
+    config,
+    dataset_root,
+    outdir,
+):
+    """
+    Evaluate ImageNetV2 accuracy over the requested (B, R) grid
+    without repeating GPU latency profiling.
+    """
+
+    cfg = load_config(config)
+
+    seed_all(84)
+
+    output = mkdir(outdir)
+
+    provenance = hardware_provenance(
+        cfg["device"]
+    )
+
+    provenance["config"] = cfg
+    provenance["experiment_type"] = "accuracy_only"
+
+    with open(
+        output / "provenance.json",
+        "w",
+    ) as f:
+        json.dump(
+            provenance,
+            f,
+            indent=2,
+            default=str,
+        )
+
+    dense, pomt, transform = make_models(
+        cfg["model"],
+        cfg["device"],
+        cfg["prune_layer"],
+    )
+
+    dataset = ImageNetV2NumericFolders(
+        dataset_root,
+        transform=transform,
+    )
+
+    print()
+    print("=" * 80)
+    print("10K IMAGENETV2 ACCURACY CHARACTERIZATION")
+    print("=" * 80)
+
+    print(
+        "Dataset size:",
+        len(dataset),
+    )
+
+    print(
+        "Samples requested:",
+        cfg["accuracy_samples"],
+    )
+
+    print(
+        "Batch sizes:",
+        cfg["batch_sizes"],
+    )
+
+    print(
+        "R values:",
+        cfg["r_values"],
+    )
+
+    accuracy = evaluate_accuracy(
+        cfg,
+        dense,
+        pomt,
+        dataset,
+        output,
+    )
+
+    print()
+    print("=" * 80)
+    print("ACCURACY CHARACTERIZATION COMPLETE")
+    print("=" * 80)
+
+    print(
+        accuracy[
+            [
+                "batch_size",
+                "r",
+                "accuracy_pct",
+                "correct",
+                "num_samples",
+            ]
+        ].to_string(
+            index=False
+        )
+    )
+
+
+def build_final_quality_surface(
+    latency_path,
+    accuracy_path,
+    output_dir,
+):
+    """
+    Merge the previously measured GPU latency surface with the
+    full ImageNetV2 accuracy characterization.
+    """
+
+    output_dir = mkdir(
+        output_dir
+    )
+
+    latency = pd.read_csv(
+        latency_path
+    )
+
+    accuracy = pd.read_csv(
+        accuracy_path
+    )
+
+    keys = [
+        "model",
+        "batch_size",
+        "r",
+    ]
+
+    latency_keys = set(
+        tuple(x)
+        for x
+        in latency[keys].itertuples(
+            index=False,
+            name=None,
+        )
+    )
+
+    accuracy_keys = set(
+        tuple(x)
+        for x
+        in accuracy[keys].itertuples(
+            index=False,
+            name=None,
+        )
+    )
+
+    missing_latency = (
+        accuracy_keys
+        - latency_keys
+    )
+
+    if missing_latency:
+        raise RuntimeError(
+            "Accuracy configurations are missing latency measurements:\n"
+            + "\n".join(
+                str(x)
+                for x
+                in sorted(
+                    missing_latency
+                )
+            )
+        )
+
+    #
+    # Keep only latency configurations that were evaluated
+    # in the 10k accuracy experiment.
+    #
+    latency = latency.merge(
+        accuracy[keys],
+        on=keys,
+        how="inner",
+    )
+
+    surface = build_surface(
+        latency,
+        accuracy,
+    )
+
+    surface.to_csv(
+        output_dir
+        / "quality_latency_surface.csv",
+        index=False,
+    )
+
+    print()
+    print("=" * 80)
+    print("FINAL QUALITY-LATENCY SURFACE")
+    print("=" * 80)
+
+    print(
+        surface[
+            [
+                "batch_size",
+                "r",
+                "content_tokens",
+                "latency_p95_ms",
+                "accuracy_pct",
+                "accuracy_drop_pp",
+                "speedup_vs_dense_p95",
+                "pareto",
+            ]
+        ].to_string(
+            index=False
+        )
+    )
+
+
+def analyze_quality_budgets(
+    surface_path,
+    output_dir,
+    epsilons,
+):
+    """
+    Extract the best p95-latency / throughput operating point
+    per batch for each requested accuracy-loss budget.
+    """
+
+    output_dir = mkdir(
+        output_dir
+    )
+
+    surface = pd.read_csv(
+        surface_path
+    )
+
+    all_rows = []
+
+    for epsilon_pp in epsilons:
+
+        rows = []
+
+        for batch_size, group in surface.groupby(
+            "batch_size"
+        ):
+
+            feasible = group[
+                group[
+                    "accuracy_drop_pp"
+                ]
+                <= epsilon_pp
+            ].copy()
+
+            if feasible.empty:
+                continue
+
+            #
+            # Min p95 latency = max throughput for fixed B.
+            #
+            best = feasible.loc[
+                feasible[
+                    "latency_p95_ms"
+                ].idxmin()
+            ]
+
+            dense = group[
+                group["r"] == 0
+            ].iloc[0]
+
+            dense_latency = float(
+                dense[
+                    "latency_p95_ms"
+                ]
+            )
+
+            best_latency = float(
+                best[
+                    "latency_p95_ms"
+                ]
+            )
+
+            speedup = (
+                dense_latency
+                / best_latency
+            )
+
+            throughput_gain_pct = (
+                speedup - 1.0
+            ) * 100.0
+
+            row = {
+                "epsilon_pp":
+                    float(
+                        epsilon_pp
+                    ),
+
+                "batch_size":
+                    int(
+                        batch_size
+                    ),
+
+                "best_r":
+                    int(
+                        best["r"]
+                    ),
+
+                "best_content_tokens":
+                    int(
+                        best[
+                            "content_tokens"
+                        ]
+                    ),
+
+                "accuracy_pct":
+                    float(
+                        best[
+                            "accuracy_pct"
+                        ]
+                    ),
+
+                "dense_accuracy_pct":
+                    float(
+                        best[
+                            "dense_accuracy_pct"
+                        ]
+                    ),
+
+                "accuracy_drop_pp":
+                    float(
+                        best[
+                            "accuracy_drop_pp"
+                        ]
+                    ),
+
+                "dense_p95_ms":
+                    dense_latency,
+
+                "best_p95_ms":
+                    best_latency,
+
+                "speedup_vs_dense":
+                    speedup,
+
+                "throughput_gain_pct":
+                    throughput_gain_pct,
+            }
+
+            rows.append(
+                row
+            )
+
+            all_rows.append(
+                row
+            )
+
+        result = pd.DataFrame(
+            rows
+        )
+
+        result.to_csv(
+            output_dir
+            / (
+                f"best_configs_epsilon_"
+                f"{epsilon_pp:g}pp.csv"
+            ),
+            index=False,
+        )
+
+        print()
+        print("=" * 80)
+        print(
+            f"BEST CONFIGURATIONS: epsilon={epsilon_pp:g} pp"
+        )
+        print("=" * 80)
+
+        if not result.empty:
+            print(
+                result.to_string(
+                    index=False,
+                    float_format=lambda x:
+                        f"{x:.4f}",
+                )
+            )
+
+    combined = pd.DataFrame(
+        all_rows
+    )
+
+    combined.to_csv(
+        output_dir
+        / "best_configs_all_epsilons.csv",
+        index=False,
+    )
+
+
+def plot_quality_constrained_gain(
+    summary_path,
+    output_dir,
+):
+    """
+    Paper-style plot:
+    throughput gain versus batch size for each accuracy budget.
+    """
+
+    output_dir = mkdir(
+        output_dir
+    )
+
+    data = pd.read_csv(
+        summary_path
+    )
+
+    fig, ax = plt.subplots(
+        figsize=(
+            7.5,
+            4.8,
+        )
+    )
+
+    for epsilon_pp, group in data.groupby(
+        "epsilon_pp"
+    ):
+
+        group = group.sort_values(
+            "batch_size"
+        )
+
+        ax.plot(
+            group[
+                "batch_size"
+            ],
+
+            group[
+                "throughput_gain_pct"
+            ],
+
+            marker="o",
+
+            label=(
+                rf"$\epsilon={epsilon_pp:g}$ pp"
+            ),
+        )
+
+    ax.axhline(
+        0,
+        linewidth=1,
+    )
+
+    ax.set_xlabel(
+        "Batch size"
+    )
+
+    ax.set_ylabel(
+        "Throughput gain vs. dense (%)"
+    )
+
+    ax.grid(
+        alpha=0.25
+    )
+
+    ax.legend()
+
+    fig.tight_layout()
+
+    fig.savefig(
+        output_dir
+        / "quality_constrained_throughput_gain.pdf",
+        bbox_inches="tight",
+    )
+
+    fig.savefig(
+        output_dir
+        / "quality_constrained_throughput_gain.png",
+        dpi=300,
+        bbox_inches="tight",
+    )
+
+    plt.close(
+        fig
+    )
+
+    print(
+        "Saved quality-constrained gain figure."
+    )
+
+
+
 # ============================================================
 # CLI
 # ============================================================
@@ -4456,6 +4935,91 @@ def main():
         "--cliff-threshold",
         type=float,
         default=0.05,
+    )
+
+    # 10k accuracy-only characterization
+
+    p = sub.add_parser(
+        "accuracy-only"
+    )
+
+    p.add_argument(
+        "--config",
+        required=True,
+    )
+
+    p.add_argument(
+        "--dataset-root",
+        required=True,
+    )
+
+    p.add_argument(
+        "--outdir",
+        required=True,
+    )
+
+    # merge measured latency + accuracy
+
+    p = sub.add_parser(
+        "build-quality-surface"
+    )
+
+    p.add_argument(
+        "--latency",
+        required=True,
+    )
+
+    p.add_argument(
+        "--accuracy",
+        required=True,
+    )
+
+    p.add_argument(
+        "--outdir",
+        required=True,
+    )
+
+    # quality budget analysis
+
+    p = sub.add_parser(
+        "quality-budgets"
+    )
+
+    p.add_argument(
+        "--surface",
+        required=True,
+    )
+
+    p.add_argument(
+        "--outdir",
+        required=True,
+    )
+
+    p.add_argument(
+        "--epsilons",
+        nargs="+",
+        type=float,
+        default=[
+            0.5,
+            1.0,
+            2.0,
+        ],
+    )
+
+    # quality-constrained plot
+
+    p = sub.add_parser(
+        "plot-quality-gain"
+    )
+
+    p.add_argument(
+        "--summary",
+        required=True,
+    )
+
+    p.add_argument(
+        "--outdir",
+        required=True,
     )
 
     # sanity
@@ -4578,7 +5142,38 @@ def main():
 
     args = parser.parse_args()
 
-    if args.command == "latency-only":
+    if args.command == "accuracy-only":
+
+        run_accuracy_only(
+            args.config,
+            args.dataset_root,
+            args.outdir,
+        )
+
+    elif args.command == "build-quality-surface":
+
+        build_final_quality_surface(
+            args.latency,
+            args.accuracy,
+            args.outdir,
+        )
+
+    elif args.command == "quality-budgets":
+
+        analyze_quality_budgets(
+            args.surface,
+            args.outdir,
+            args.epsilons,
+        )
+
+    elif args.command == "plot-quality-gain":
+
+        plot_quality_constrained_gain(
+            args.summary,
+            args.outdir,
+        )
+
+    elif args.command == "latency-only":
 
         run_latency_only(
             args.config,

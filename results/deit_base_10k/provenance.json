@@ -1,0 +1,41 @@
+{
+  "torch": "2.7.0+cu126",
+  "timm": "0.9.12",
+  "cuda_runtime": "12.6",
+  "cuda_available": true,
+  "pomt_commit": "35e7c738c26ffd01fb0ae291fd49440a4c1ed2a5",
+  "gpu": "NVIDIA A100-PCIE-40GB",
+  "gpu_capability": [
+    8,
+    0
+  ],
+  "nvidia_smi": "NVIDIA A100-PCIE-40GB, 580.105.08, 40960 MiB, 250.00 W",
+  "config": {
+    "model": "deit_base_patch16_224",
+    "device": "cuda:0",
+    "prune_layer": 3,
+    "batch_sizes": [
+      1,
+      2,
+      4,
+      8,
+      16,
+      24,
+      32,
+      48,
+      64
+    ],
+    "r_values": [
+      0,
+      48,
+      64,
+      80,
+      96,
+      112,
+      128,
+      144
+    ],
+    "accuracy_samples": 10000
+  },
+  "experiment_type": "accuracy_only"
+}

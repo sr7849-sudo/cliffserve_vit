@@ -1,0 +1,28 @@
+model: deit_base_patch16_224
+
+device: cuda:0
+prune_layer: 3
+
+batch_sizes:
+  - 1
+  - 2
+  - 4
+  - 8
+  - 16
+  - 24
+  - 32
+  - 48
+  - 64
+
+r_values:
+  - 0
+  - 48
+  - 64
+  - 80
+  - 96
+  - 112
+  - 128
+  - 144
+
+latency_warmup: 50
+latency_repeats: 300

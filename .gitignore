@@ -1,43 +1,57 @@
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
 
 # Virtual environments
 .venv/
 venv/
+env/
 
-# Large datasets
+# Datasets / archives
 data/
 *.tar
 *.tar.gz
+*.tgz
 *.zip
 
-# Logs / temp
-*.log
+# Slurm / logs
+slurm-*.out
 *.out
 *.err
+*.log
 
-# Slurm
-slurm-*.out
-slurm-*.err
-
-# Large raw scheduler traces
-results/**/sweep/requests_*.csv
-results/**/sweep/batches_*.csv
-
-# Raw latency samples
-results/**/latency_samples.npz
-
-# Backups
-*.bak
-*.backup
-cliffserve.py.before_extended_latency
-
-# Editors / OS
+# Editor / OS
 .DS_Store
 .vscode/
 .idea/
+*~
+*.swp
 
-# Do not vendor full upstream POMT clone
+# Backups
+*.backup
+*.bak
+*.before_*
+cliffserve.py.before_10k_accuracy
+final_scheduler.py.before_resume
+
+# Third-party cloned repo
 third_party/PruneOneMoreToken/
+
+# Large raw latency sample archives
+results/**/latency_samples.npz
+
+# Large request/batch traces
+results/**/requests_*.csv
+results/**/batches_*.csv
+results/**/sweep/requests_*.csv
+results/**/sweep/batches_*.csv
+
+# Any accidental model/cache files
+*.pth
+*.pt
+*.ckpt
+*.bin
+
+# HF / torch cache if created locally
+.cache/
